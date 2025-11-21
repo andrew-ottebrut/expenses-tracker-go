@@ -40,6 +40,9 @@ function App() {
   const [description, setDescription] = useState('')
   const [cost, setCost] = useState('')
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
+  const [editDescription, setEditDescription] = useState('')
+  const [editCost, setEditCost] = useState('')
 
   const sortedExpenses = useMemo(() => {
     return [...expenses].sort((a, b) => {
@@ -65,6 +68,49 @@ function App() {
     setExpenses((prevExpenses) =>
       prevExpenses.filter((expense) => expense.id !== expenseId),
     )
+    if (expenseId === editingExpenseId) {
+      handleCancelEdit()
+    }
+  }
+
+  const handleStartEdit = (expense: Expense) => {
+    setEditingExpenseId(expense.id)
+    setEditDescription(expense.description)
+    setEditCost(expense.cost.toString())
+  }
+
+  const handleCancelEdit = () => {
+    setEditingExpenseId(null)
+    setEditDescription('')
+    setEditCost('')
+  }
+
+  const handleUpdateExpense = (
+    event: FormEvent<HTMLFormElement>,
+    expenseId: string,
+  ) => {
+    event.preventDefault()
+    if (!editDescription.trim()) {
+      return
+    }
+
+    const parsedCost = Number(editCost)
+    if (Number.isNaN(parsedCost) || parsedCost <= 0) {
+      return
+    }
+
+    setExpenses((prevExpenses) =>
+      prevExpenses.map((expense) =>
+        expense.id === expenseId
+          ? {
+            ...expense,
+            description: editDescription.trim(),
+            cost: parsedCost,
+          }
+          : expense,
+      ),
+    )
+    handleCancelEdit()
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -168,28 +214,83 @@ function App() {
               <ul className="expense-list">
                 {entries.map((expense) => (
                   <li key={expense.id} className="expense-list__item">
-                    <div>
-                      <p className="expense__description">{expense.description}</p>
-                      <p className="expense__time">
-                        {new Date(expense.createdDate).toLocaleTimeString(undefined, {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                    <div className="expense__actions">
-                      <span className="expense__cost">
-                        ${expense.cost.toFixed(2)}
-                      </span>
-                      <button
-                        type="button"
-                        className="expense__remove"
-                        onClick={() => handleRemoveExpense(expense.id)}
-                        aria-label={`Remove expense ${expense.description}`}
+                    {editingExpenseId === expense.id ? (
+                      <form
+                        className="expense-edit-form"
+                        onSubmit={(event) => handleUpdateExpense(event, expense.id)}
                       >
-                        Remove
-                      </button>
-                    </div>
+                        <label className="expense-edit__field">
+                          Description
+                          <input
+                            type="text"
+                            value={editDescription}
+                            onChange={(event) => setEditDescription(event.target.value)}
+                            required
+                          />
+                        </label>
+                        <label className="expense-edit__field">
+                          Cost
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={editCost}
+                            onChange={(event) => setEditCost(event.target.value)}
+                            required
+                          />
+                        </label>
+                        <div className="expense-edit__actions">
+                          <button
+                            type="submit"
+                            className="expense__action-button expense__save"
+                            aria-label={`Save changes for ${expense.description}`}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="expense__action-button expense__cancel"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="expense__info">
+                          <div>
+                            <p className="expense__description">{expense.description}</p>
+                            <p className="expense__time">
+                              {new Date(expense.createdDate).toLocaleTimeString(undefined, {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          <span className="expense__cost">
+                            ${expense.cost.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="expense__actions">
+                          <button
+                            type="button"
+                            className="expense__action-button expense__edit"
+                            onClick={() => handleStartEdit(expense)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="expense__action-button expense__remove"
+                            onClick={() => handleRemoveExpense(expense.id)}
+                            aria-label={`Remove expense ${expense.description}`}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
