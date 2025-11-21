@@ -61,6 +61,12 @@ function App() {
     return Array.from(groups.entries())
   }, [sortedExpenses])
 
+  const handleRemoveExpense = (expenseId: string) => {
+    setExpenses((prevExpenses) =>
+      prevExpenses.filter((expense) => expense.id !== expenseId),
+    )
+  }
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!description.trim() || !cost) {
@@ -171,9 +177,19 @@ function App() {
                         })}
                       </p>
                     </div>
-                    <span className="expense__cost">
-                      ${expense.cost.toFixed(2)}
-                    </span>
+                    <div className="expense__actions">
+                      <span className="expense__cost">
+                        ${expense.cost.toFixed(2)}
+                      </span>
+                      <button
+                        type="button"
+                        className="expense__remove"
+                        onClick={() => handleRemoveExpense(expense.id)}
+                        aria-label={`Remove expense ${expense.description}`}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

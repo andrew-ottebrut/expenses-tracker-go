@@ -166,6 +166,12 @@
   border-radius: 1rem;
 }
 
+.expense__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
 .expense__description {
   margin: 0;
   font-weight: 600;
@@ -181,6 +187,24 @@
 .expense__cost {
   font-weight: 600;
   color: #0f172a;
+}
+
+.expense__remove {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.5rem;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.expense__remove:hover,
+.expense__remove:focus-visible {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.08);
+  outline: none;
 }
 
 @media (max-width: 640px) {
