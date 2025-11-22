@@ -25,8 +25,10 @@ type Expense struct {
 var coll *mongo.Collection
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file", err)
+	if os.Getenv("MODE") == "dev" {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file", err)
+		}
 	}
 
 	uri := os.Getenv("MONGODB_URI")
@@ -51,12 +53,18 @@ func main() {
 func setupListener() {
 	app := fiber.New()
 
-	app.Use(cors.New())
+	if os.Getenv("MODE") == "dev" {
+		app.Use(cors.New())
+	}
 
 	app.Get("/api/expenses", getExpenses)
 	app.Post("/api/expenses", createExpense)
 	app.Patch("/api/expenses/:id", updateExpense)
 	app.Delete("/api/expenses/:id", removeExpense)
+
+	if os.Getenv("ENV") == "prod" {
+		app.Static("/", "./client/dist")
+	}
 
 	port := os.Getenv("PORT")
 	log.Fatal(app.Listen(":" + port))
