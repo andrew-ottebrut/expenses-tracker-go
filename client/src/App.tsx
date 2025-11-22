@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useMemo, useState } from 'react'
 import './App.css'
+import { MoonIcon, SunIcon } from './components/ThemeIcons/ThemeIcons'
 import { BASE_URL } from './consts'
+import { useTheme } from './contexts/ThemeContext'
 
 type Expense = {
   _id: string
@@ -14,6 +16,7 @@ type ExpenseAddRequest = Pick<Expense, "description" | "cost">
 
 function App() {
   const queryClient = useQueryClient()
+  const { theme, toggleTheme } = useTheme()
 
   const { data: expenses, isPending: isExpensesLoading } = useQuery({
     queryKey: ["expenses"],
@@ -192,6 +195,19 @@ function App() {
             Add purchases as you go and see how they add up day by day.
           </p>
         </div>
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? (
+            <MoonIcon />
+          ) : (
+            <SunIcon />
+          )}
+          <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+        </button>
       </header>
 
       <section className="card form-card">

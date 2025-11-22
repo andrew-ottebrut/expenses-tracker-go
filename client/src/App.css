@@ -10,17 +10,55 @@
   gap: 1.5rem;
 }
 
+header {
+  position: relative;
+}
+
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.8rem;
-  color: #6366f1;
+  color: var(--color-accent);
   margin: 0 0 0.4rem;
 }
 
 .subhead {
   margin: 0.6rem 0 0;
-  color: #64748b;
+  color: var(--color-text-secondary);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-accent);
+  background: var(--color-bg-secondary);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle img {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
 .sort-controls {
@@ -38,19 +76,20 @@
 
 .sort-controls select {
   border-radius: 0.75rem;
-  border: 1px solid #cbd5f5;
+  border: 1px solid var(--color-border);
   padding: 0.6rem 2rem 0.6rem 0.8rem;
   font-size: 1rem;
-  background: white;
-  color: #0f172a;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .sort-controls select:focus {
-  outline-color: #6366f1;
+  outline-color: var(--color-accent);
 }
 
 .select-wrapper::after {
@@ -63,17 +102,16 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid #64748b;
+  border-top: 6px solid var(--color-text-secondary);
   pointer-events: none;
 }
 
 .card {
-  background: white;
+  background: var(--color-bg-secondary);
   border-radius: 1.25rem;
   padding: 1.75rem;
-  box-shadow:
-    0 20px 45px -30px rgba(15, 23, 42, 0.45),
-    0 4px 10px -6px rgba(15, 23, 42, 0.3);
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .form-card h2 {
@@ -91,26 +129,29 @@
   display: flex;
   flex-direction: column;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--color-text-secondary);
   gap: 0.4rem;
 }
 
 .expense-form input {
   border-radius: 0.9rem;
-  border: 1px solid #cbd5f5;
+  border: 1px solid var(--color-border);
   padding: 0.8rem 1rem;
   font-size: 1rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .expense-form input:focus {
-  outline-color: #6366f1;
+  outline: 1px solid var(--color-accent);
 }
 
 .expense-form button {
   align-self: end;
   border: none;
   border-radius: 1rem;
-  background: linear-gradient(120deg, #6366f1, #8b5cf6);
+  background: linear-gradient(120deg, var(--color-accent), var(--color-accent-secondary));
   color: white;
   font-weight: 600;
   font-size: 1rem;
@@ -121,13 +162,13 @@
 
 .expense-form button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px -12px rgba(99, 102, 241, 0.7);
+  box-shadow: var(--shadow-button);
 }
 
 .day-group+.day-group {
   margin-top: 2rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #8b5cf6;
+  border-top: 1px solid var(--color-border-divider);
 }
 
 .day-group__header {
@@ -140,7 +181,7 @@
 .day-group__title {
   margin: 0;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-primary);
 }
 
 .day-group__total {
@@ -163,8 +204,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.9rem 1.1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-light);
   border-radius: 1rem;
+  transition: border-color 0.2s ease;
 }
 
 .expense__info {
@@ -180,18 +222,18 @@
   overflow-wrap: break-word;
   margin: 0;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-primary);
 }
 
 .expense__time {
   margin: 0.2rem 0 0;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
 }
 
 .expense__cost {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text-primary);
 }
 
 .expense__actions {
@@ -212,46 +254,46 @@
 }
 
 .expense__edit {
-  color: #2563eb;
+  color: var(--color-edit);
 }
 
 .expense__edit:hover,
 .expense__edit:focus-visible {
-  color: #1d4ed8;
-  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-edit-hover);
+  background: var(--color-edit-bg);
   outline: none;
 }
 
 .expense__remove {
-  color: #ef4444;
+  color: var(--color-remove);
 }
 
 .expense__remove:hover,
 .expense__remove:focus-visible {
-  color: #b91c1c;
-  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-remove-hover);
+  background: var(--color-remove-bg);
   outline: none;
 }
 
 .expense__save {
-  color: #16a34a;
+  color: var(--color-save);
 }
 
 .expense__save:hover,
 .expense__save:focus-visible {
-  color: #15803d;
-  background: rgba(22, 163, 74, 0.12);
+  color: var(--color-save-hover);
+  background: var(--color-save-bg);
   outline: none;
 }
 
 .expense__cancel {
-  color: #475569;
+  color: var(--color-cancel);
 }
 
 .expense__cancel:hover,
 .expense__cancel:focus-visible {
-  color: #334155;
-  background: rgba(71, 85, 105, 0.1);
+  color: var(--color-cancel-hover);
+  background: var(--color-cancel-bg);
   outline: none;
 }
 
@@ -267,18 +309,21 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 
 .expense-edit__field input {
   border-radius: 0.75rem;
-  border: 1px solid #cbd5f5;
+  border: 1px solid var(--color-border);
   padding: 0.6rem 0.85rem;
   font-size: 0.95rem;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .expense-edit__field input:focus {
-  outline-color: #6366f1;
+  outline-color: var(--color-accent);
 }
 
 .expense-edit__actions {
