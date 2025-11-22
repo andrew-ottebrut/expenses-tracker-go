@@ -1,50 +1,46 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useMemo, useState } from 'react'
 import './App.css'
+import { BASE_URL } from './consts'
 
 type Expense = {
-  id: string
+  _id: string
   description: string
   cost: number
   createdDate: string
 }
 
-const initialExpenses: Expense[] = [
-  {
-    id: crypto.randomUUID(),
-    description: 'Groceries - Trader Joe’s',
-    cost: 56.23,
-    createdDate: new Date().toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    description: 'Monthly transit pass',
-    cost: 89.0,
-    createdDate: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    description: 'Coffee with friends',
-    cost: 18.5,
-    createdDate: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
-  },
-  {
-    id: crypto.randomUUID(),
-    description: 'Gym membership',
-    cost: 42.0,
-    createdDate: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString(),
-  },
-]
+type ExpenseAddRequest = Pick<Expense, "description" | "cost">
 
 function App() {
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses)
+  const queryClient = useQueryClient()
+
+  const { data: expenses, isPending: isExpensesLoading } = useQuery({
+    queryKey: ["expenses"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/expenses`)
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.log("Error fetching data: " + data.message)
+        return []
+      }
+
+      return data
+    }
+  })
+
   const [description, setDescription] = useState('')
   const [cost, setCost] = useState('')
+
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
   const [editDescription, setEditDescription] = useState('')
   const [editCost, setEditCost] = useState('')
 
   const sortedExpenses = useMemo(() => {
+    if (!expenses) return []
     return [...expenses].sort((a, b) => {
       const diff =
         new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
@@ -64,17 +60,73 @@ function App() {
     return Array.from(groups.entries())
   }, [sortedExpenses])
 
+  const { mutate: addExpense } = useMutation({
+    mutationFn: async (requestData: ExpenseAddRequest) => {
+      const res = await fetch(`${BASE_URL}/expenses`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.log("Error adding expense: ", data.message)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+    }
+  })
+
+  const handleAddExpense = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!description.trim() || !cost) {
+      return
+    }
+
+    const parsedCost = Number(cost)
+    if (Number.isNaN(parsedCost) || parsedCost <= 0) {
+      return
+    }
+
+    const newExpense: ExpenseAddRequest = {
+      description: description.trim(),
+      cost: parsedCost
+    }
+    addExpense(newExpense)
+
+    setDescription('')
+    setCost('')
+  }
+
+  const { mutate: removeExpense } = useMutation({
+    mutationFn: async (expenseId: string) => {
+      const res = await fetch(`${BASE_URL}/expenses/${expenseId}`, {
+        method: "DELETE"
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.log("Error adding expense: ", data.message)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+    }
+  })
+
   const handleRemoveExpense = (expenseId: string) => {
-    setExpenses((prevExpenses) =>
-      prevExpenses.filter((expense) => expense.id !== expenseId),
-    )
+    removeExpense(expenseId)
+
     if (expenseId === editingExpenseId) {
       handleCancelEdit()
     }
   }
 
   const handleStartEdit = (expense: Expense) => {
-    setEditingExpenseId(expense.id)
+    setEditingExpenseId(expense._id)
     setEditDescription(expense.description)
     setEditCost(expense.cost.toString())
   }
@@ -84,6 +136,26 @@ function App() {
     setEditDescription('')
     setEditCost('')
   }
+
+  const { mutate: updateExpense } = useMutation({
+    mutationFn: async ({ expenseId, requestData }: { expenseId: string, requestData: Partial<ExpenseAddRequest> }) => {
+      const res = await fetch(`${BASE_URL}/expenses/${expenseId}`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        console.log("Error adding expense: ", data.message)
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+    }
+  })
 
   const handleUpdateExpense = (
     event: FormEvent<HTMLFormElement>,
@@ -99,41 +171,15 @@ function App() {
       return
     }
 
-    setExpenses((prevExpenses) =>
-      prevExpenses.map((expense) =>
-        expense.id === expenseId
-          ? {
-            ...expense,
-            description: editDescription.trim(),
-            cost: parsedCost,
-          }
-          : expense,
-      ),
-    )
+    updateExpense({
+      expenseId,
+      requestData: {
+        description: editDescription,
+        cost: parsedCost
+      }
+    })
+
     handleCancelEdit()
-  }
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!description.trim() || !cost) {
-      return
-    }
-
-    const parsedCost = Number(cost)
-    if (Number.isNaN(parsedCost) || parsedCost <= 0) {
-      return
-    }
-
-    const newExpense: Expense = {
-      id: crypto.randomUUID(),
-      description: description.trim(),
-      cost: parsedCost,
-      createdDate: new Date().toISOString(),
-    }
-
-    setExpenses((prev) => [newExpense, ...prev])
-    setDescription('')
-    setCost('')
   }
 
   return (
@@ -150,7 +196,7 @@ function App() {
 
       <section className="card form-card">
         <h2>Add a new expense</h2>
-        <form onSubmit={handleSubmit} className="expense-form">
+        <form onSubmit={handleAddExpense} className="expense-form">
           <label>
             Description
             <input
@@ -194,7 +240,9 @@ function App() {
       </div>
 
       <section className="card">
-        {groupedExpenses.length === 0 ? (
+        {isExpensesLoading ? (
+          <p>Loading expenses...</p>
+        ) : groupedExpenses.length === 0 ? (
           <p>No expenses yet. Start by adding your first one!</p>
         ) : (
           groupedExpenses.map(([dateLabel, entries]) => (
@@ -213,11 +261,11 @@ function App() {
               </div>
               <ul className="expense-list">
                 {entries.map((expense) => (
-                  <li key={expense.id} className="expense-list__item">
-                    {editingExpenseId === expense.id ? (
+                  <li key={expense._id} className="expense-list__item">
+                    {editingExpenseId === expense._id ? (
                       <form
                         className="expense-edit-form"
-                        onSubmit={(event) => handleUpdateExpense(event, expense.id)}
+                        onSubmit={(event) => handleUpdateExpense(event, expense._id)}
                       >
                         <label className="expense-edit__field">
                           Description
@@ -283,8 +331,8 @@ function App() {
                           <button
                             type="button"
                             className="expense__action-button expense__remove"
-                            onClick={() => handleRemoveExpense(expense.id)}
-                            aria-label={`Remove expense ${expense.description}`}
+                            onClick={() => handleRemoveExpense(expense._id)}
+                            aria-label={`Remove expense ${expense.description} `}
                           >
                             Remove
                           </button>

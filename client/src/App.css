@@ -286,7 +286,6 @@
   align-items: center;
   gap: 0.5rem;
   align-self: end;
-  justify-self: end;
   height: calc(2.15rem + 2px);
 }
 
@@ -320,6 +319,7 @@
 
   .expense-edit__actions {
     grid-column: span 2;
+    justify-self: end;
   }
 }
 

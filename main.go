@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -49,6 +50,8 @@ func main() {
 
 func setupListener() {
 	app := fiber.New()
+
+	app.Use(cors.New())
 
 	app.Get("/api/expenses", getExpenses)
 	app.Post("/api/expenses", createExpense)
