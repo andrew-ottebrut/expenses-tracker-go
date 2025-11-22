@@ -62,7 +62,7 @@ func setupListener() {
 	app.Patch("/api/expenses/:id", updateExpense)
 	app.Delete("/api/expenses/:id", removeExpense)
 
-	if os.Getenv("ENV") == "prod" {
+	if os.Getenv("MODE") == "prod" {
 		app.Static("/", "./client/dist")
 	}
 
