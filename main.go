@@ -25,7 +25,7 @@ type Expense struct {
 var coll *mongo.Collection
 
 func main() {
-	if os.Getenv("MODE") == "dev" {
+	if os.Getenv("MODE") != "prod" {
 		if err := godotenv.Load(); err != nil {
 			log.Fatal("Error loading .env file", err)
 		}
@@ -53,7 +53,7 @@ func main() {
 func setupListener() {
 	app := fiber.New()
 
-	if os.Getenv("MODE") == "dev" {
+	if os.Getenv("MODE") != "prod" {
 		app.Use(cors.New())
 	}
 
